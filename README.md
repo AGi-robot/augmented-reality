@@ -25,6 +25,14 @@ Persistent recognition of the exact lab corner after fully closing the app will 
 
 The first launch needs camera permission. Move the phone slowly until a floor is detected, then tap where Grace's chamber should stand.
 
+## Mirror Grace's WebUI replies
+
+1. Open the Telepathy WebUI from your phone's browser to confirm that the phone can reach its HTTPS address. Use the existing trusted HTTPS endpoint, such as [Tailscale Serve](https://tailscale.com/kb/1312/serve).
+2. In the AR app, tap **Telepathy HTTPS address**, enter that same address, and tap **Connect**. Place Grace's chamber if you haven't already.
+3. Send a message to Grace from the WebUI. On the phone, her mouth moves as reply text arrives. Tap **Disconnect** to stop listening.
+
+The app subscribes to the same response topic as the WebUI. The mouth movement follows streamed text and approximates speaking. Audio and timing data for lip sync are not part of that stream. Use an endpoint you control, since the response topic carries live chat text.
+
 ## Project layout
 
 - `Assets/StreamingAssets/Grace.vrm`: Grace's runtime model.
@@ -32,5 +40,6 @@ The first launch needs camera permission. Move the phone slowly until a floor is
 - `Assets/GraceAR/Scripts/GraceChamber.cs`: procedural tube and liquid.
 - `Assets/GraceAR/Scripts/GraceVrmLoader.cs`: Android-safe VRM loading.
 - `Assets/GraceAR/Scripts/GraceActionController.cs`: floating and actions.
+- `Assets/GraceAR/Scripts/GraceReplyStream.cs`: read-only subscription to Telepathy replies.
 - `Assets/GraceAR/Editor/GraceArProjectSetup.cs`: Android and scene setup.
 

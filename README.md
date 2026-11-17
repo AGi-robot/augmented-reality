@@ -16,8 +16,7 @@ Persistent recognition of the exact lab corner after fully closing the app will 
 ## Open and build
 
 1. Install Unity Hub and Unity 6, including **Android Build Support**, **Android SDK & NDK Tools**, and **OpenJDK**.
-2. Add this directory as a Unity project:
-   `entity/augmented_reality/augmented_reality_console`
+2. Open this repository's root directory as a Unity project.
 3. Let Unity resolve the AR Foundation, ARCore, and UniVRM packages.
 4. Run **Grace AR > Configure Android and Create Scene** from Unity's menu.
 5. Open **Edit > Project Settings > XR Plug-in Management > Android** and enable **ARCore**.

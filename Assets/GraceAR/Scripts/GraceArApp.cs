@@ -19,6 +19,9 @@ namespace Aiva.GraceAR
 
         private ARRaycastManager _raycastManager;
         private ARPlaneManager _planeManager;
+        private ARAnchorManager _anchorManager;
+        private ARAnchor _anchor;
+        private bool _placing;
         private GraceChamber _chamber;
         private GraceVrmLoader _loader;
         private GraceReplyStream _replies;
@@ -61,10 +64,11 @@ namespace Aiva.GraceAR
             sessionObject.AddComponent<ARInputManager>();
 
             var originObject = new GameObject("XR Origin");
+            originObject.SetActive(false);
             var origin = originObject.AddComponent<XROrigin>();
             _raycastManager = originObject.AddComponent<ARRaycastManager>();
             _planeManager = originObject.AddComponent<ARPlaneManager>();
-            originObject.AddComponent<ARAnchorManager>();
+            _anchorManager = originObject.AddComponent<ARAnchorManager>();
 
             var offset = new GameObject("Camera Offset");
             offset.transform.SetParent(originObject.transform, false);
@@ -86,6 +90,7 @@ namespace Aiva.GraceAR
             cameraObject.AddComponent<ARCameraBackground>();
             origin.CameraFloorOffsetObject = offset;
             origin.Camera = camera;
+            originObject.SetActive(true);
         }
 
         private void Update()
@@ -129,8 +134,9 @@ namespace Aiva.GraceAR
             if (EnhancedTouchSupport.enabled) EnhancedTouchSupport.Disable();
         }
 
-        private void PlaceAt(Vector2 screenPoint)
+        private async void PlaceAt(Vector2 screenPoint)
         {
+            if (_placing || _anchorManager.subsystem?.running != true) return;
             if (!_raycastManager.Raycast(screenPoint, Hits, TrackableType.PlaneWithinPolygon))
             {
                 _status = "No floor found there. Move the phone slowly and try again.";
@@ -146,10 +152,40 @@ namespace Aiva.GraceAR
                 pose.rotation = Quaternion.LookRotation(towardCamera.normalized, Vector3.up);
             }
 
-            _chamber.transform.SetPositionAndRotation(pose.position, pose.rotation);
-            _chamber.gameObject.SetActive(true);
-            _status = "Grace’s chamber is anchored here for this AR session.";
-            _planeManager.enabled = false;
+            _placing = true;
+            _status = "Anchoring Grace’s chamber…";
+            try
+            {
+                var result = await _anchorManager.TryAddAnchorAsync(pose);
+                if (this == null) return;
+                if (!result.status.IsSuccess() || result.value == null)
+                {
+                    _status = "Could not anchor the chamber. Tap a detected floor point again.";
+                    return;
+                }
+
+                var previous = _anchor;
+                _anchor = result.value;
+                _chamber.transform.SetParent(_anchor.transform, false);
+                _chamber.transform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);
+                _chamber.gameObject.SetActive(true);
+                if (previous != null && !_anchorManager.TryRemoveAnchor(previous))
+                    Destroy(previous.gameObject);
+                _status = "Grace’s chamber is anchored here for this AR session.";
+                _planeManager.enabled = false;
+            }
+            catch (System.Exception error)
+            {
+                if (this != null)
+                {
+                    _status = "Could not anchor the chamber. Tap a detected floor point again.";
+                    Debug.LogWarning($"Grace AR anchor placement failed: {error.Message}");
+                }
+            }
+            finally
+            {
+                _placing = false;
+            }
         }
 
         private void OnGUI()

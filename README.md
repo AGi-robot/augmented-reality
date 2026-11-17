@@ -9,7 +9,7 @@ This Unity project places Grace's complete liquid chamber in an Android ARCore s
 - Procedural transparent chamber, liquid, illuminated rings, and bubbles.
 - Tap a detected floor to place or move the chamber.
 - Grace gently floats and has initial **Wave** and **Turn** actions.
-- The chamber remains fixed while ARCore's current tracking session is alive.
+- The chamber is attached to an ARCore anchor for the current tracking session.
 
 Persistent recognition of the exact lab corner after fully closing the app will use an image marker mounted near that corner. That is the next milestone; a plain saved coordinate is not reliable because ARCore creates a new origin in each session.
 

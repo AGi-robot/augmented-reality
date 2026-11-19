@@ -11,9 +11,10 @@ namespace Aiva.GraceAR
     // Mirrors the same text response topic that the Telepathy WebUI subscribes to.
     public sealed class GraceReplyStream : MonoBehaviour
     {
-        private const string Topic = "/tms/text_response";
+        private const string Topic = "/telepathic/response";
         private const string SubscriptionId = "grace-ar-replies";
-        private const int MaxMessageBytes = 1024 * 1024;
+        // The shared reply stream can include Canvas PNG events as well as text.
+        private const int MaxMessageBytes = 12 * 1024 * 1024;
         private CancellationTokenSource _connection;
 
         public event Action TextArrived;
@@ -24,7 +25,7 @@ namespace Aiva.GraceAR
         public async void Connect(string address)
         {
             if (Active) return;
-            if (!Uri.TryCreate(address.Trim(), UriKind.Absolute, out var url)
+            if (!Uri.TryCreate((address ?? "").Trim(), UriKind.Absolute, out var url)
                 || url.Scheme != Uri.UriSchemeHttps || string.IsNullOrEmpty(url.Host)
                 || !string.IsNullOrEmpty(url.UserInfo))
             {

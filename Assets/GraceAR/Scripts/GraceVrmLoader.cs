@@ -47,11 +47,19 @@ namespace Aiva.GraceAR
 
         private async Task LoadBytes(Transform parent, byte[] bytes)
         {
-            _instance = await VrmUtility.LoadBytesAsync(
+            var instance = await VrmUtility.LoadBytesAsync(
                 "Grace.vrm",
                 bytes,
                 new RuntimeOnlyAwaitCaller());
 
+            // Loading can finish after the scene or target mount is destroyed.
+            if (this == null || parent == null)
+            {
+                instance.Dispose();
+                return;
+            }
+            _instance?.Dispose();
+            _instance = instance;
             _instance.transform.SetParent(parent, false);
             _instance.transform.localPosition = Vector3.zero;
             _instance.transform.localRotation = Quaternion.identity;
